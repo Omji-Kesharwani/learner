@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,6 +14,11 @@ model User {
   name        String? 
   number      String  @unique
   password    String
+  Balance     Balance[]
+  OnRampTransaction OnRampTransaction[]
+  sentTranfers p2pTransfer[] @relation(name:"FromUserRelation")
+  recievedTransfers p2pTransfer[] @relation(name:"ToUserRelation")
+
 }
 
 model Merchant {
@@ -25,4 +31,36 @@ model Merchant {
 enum AuthType {
   Google
   Github
+}
+model p2pTransfer{
+  id Int @id @default(autoincrement())
+  amount Int
+  timestamp DateTime
+  fromUserId Int
+  fromUser User @relation(name:"FromUserRelation", fields: [fromUserId] ,references:[id])
+  toUserId Int
+  toUser User @relation(name:"ToUserRelation",fields:[toUserId] , references: [id])
+
+}
+model OnRampTransaction{
+  id Int @id @default(autoincrement())
+  status OnRampStatus
+  token String @unique
+  provider String 
+  amount Int
+  startTime DateTime
+  userId Int
+  user User @relation(fields: [userId],references: [id])
+}
+model Balance{
+  id Int @id @default(autoincrement())
+  userId Int @unique
+  amount Int
+  locked Int
+  user User @relation(fields: [userId], references: [id])
+}
+enum OnRampStatus{
+  Success
+  Failure 
+  Processing
 }
